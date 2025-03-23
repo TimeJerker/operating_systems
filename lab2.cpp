@@ -1,12 +1,12 @@
 #include <iostream>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include <unistd.h>
 #include <string>
 #include <fstream>
 
 
 using namespace std;
+
 
 void copyFile(){
     string initialFile, copyFile;
@@ -27,7 +27,6 @@ void copyFile(){
     if(fin.is_open()){
         ofstream fout;
         fout.open(copyFile, ios::binary);
-
         while(!fin.eof()) {
             fin.read(buf, bufsize);
             if (fin.gcount()) fout.write(buf, fin.gcount());
@@ -43,7 +42,7 @@ void copyFile(){
 
 void moveFile(){
     string oldFilePath, newFilePath;
-    cout << "Enter oldFilePath: ";
+    cout << "Enter a source: ";
     cin >> oldFilePath;
     cout << "Enter newFilePath: ";
     cin >> newFilePath;
@@ -59,7 +58,7 @@ void permissionFile(){
     string filename, permission;
     cout << "Enter file name: ";
     cin >> filename;
-    cout << "Enter permission (0755 for rwxr-xr-x): ";
+    cout << "Enter permission (e.g 0755 for rwxr-xr-x): ";
     cin >> permission;
     int mode = stoi(permission, 0, 8);
 
@@ -85,8 +84,8 @@ void infoFile(){
         cout << ((file_info.st_mode & S_IXGRP) ? "x" : "-");
         cout << ((file_info.st_mode & S_IROTH) ? "r" : "-");
         cout << ((file_info.st_mode & S_IWOTH) ? "w" : "-");
-        cout << ((file_info.st_mode & S_IXOTH) ? "x" : "-");
-        cout << "File size" << file_info.st_size << endl;
+        cout << ((file_info.st_mode & S_IXOTH) ? "x" : "-") << endl;
+        cout << "File size: " << file_info.st_size << endl;
         cout << "Last modification time: " << ctime(&file_info.st_mtime);
     } else perror("Error: ");
 
@@ -100,16 +99,39 @@ void getHelp(){
     cout << "--info: Get file information" << endl; 
 }
 
+void showFile(){
+    string filename;
+    cout << "Enter a file name: ";
+    cin >> filename;
+    ifstream fin(filename);
+    if(!fin.is_open()){
+        cout << "Error: File not found" << endl;
+        return;
+    }
+    string Line;
+    int LineNumber = 0;
+
+    while(getline(fin, Line)){
+        LineNumber++;
+        if(LineNumber %2 != 0){
+            cout << Line << endl;
+        }
+    }
+    fin.close();
+}
+
 void greeting(){
     while(true){
         string action;
         cout << "Enter action or --help for help: ";
         cin >> action;
         if(action == "--copy")copyFile();
-        if(action == "--move")moveFile();
-        if(action == "--permission")permissionFile();
-        if(action == "--info")infoFile();
-        if(action == "--help")getHelp();
+        else if(action == "--move")moveFile();
+        else if(action == "--permission")permissionFile();
+        else if(action == "--info")infoFile();
+        else if(action == "--help")getHelp();
+        else if(action == "show")showFile();
+        else if(action == "--exit")break;
         else cout << action << ": command not found" << endl;
     }
 }
